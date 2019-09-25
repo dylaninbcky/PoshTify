@@ -1,8 +1,8 @@
 Function Set-SpotiyPause {
     [Cmdletbinding()]
     param (
-        [parameter(Mandatory, Position = 0)]
-        $AccessCode
+        [parameter(Position = 0)]
+        $AccessCode = $Global:AccessCode
     )
     BEGIN {
         $Splatting = @{

@@ -4,9 +4,6 @@ Cannot use permission scope user-top-read sigh.  	https://github.com/spotify/web
 
 #>
 
-
-
-
 Function Get-SpotifyTopplayed {
     [Cmdletbinding()]
     param (

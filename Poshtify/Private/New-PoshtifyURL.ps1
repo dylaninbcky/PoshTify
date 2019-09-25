@@ -24,7 +24,8 @@ Function New-PoshtifyURL {
             "playlist-read-private",
             "app-remote-control",
             "user-read-recently-played",
-            "playlist-modify-private"
+            "playlist-modify-private",
+            "user-top-read"
         )
     )
     PROCESS {

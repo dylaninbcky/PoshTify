@@ -1,4 +1,4 @@
-Function Get-CurrentlyPlaying {
+Function Get-Spotifyplaylists {
     [Cmdletbinding(DefaultParameterSetName = 'AccessCode')]
     param (
         [parameter(HelpMessage = "Session code from Connecting, ", ParameterSetname = 'AccessCode')]
@@ -16,7 +16,7 @@ Function Get-CurrentlyPlaying {
                 Throw "Cannot refresh token"
             }
             $Splatting = @{
-                URI     = "https://api.spotify.com/v1/me/player/currently-playing"
+                URI     = "https://api.spotify.com/v1/me/playlists"
                 Method  = "Get"
                 Headers = @{
                     Authorization = "$($AccessCode.token_type) $($AccessCode.access_token)"; "contenttype" = "application/json"
@@ -25,15 +25,9 @@ Function Get-CurrentlyPlaying {
         }
         else {
             $session = Get-Content -Raw -Path $Jsonfilepath | ConvertFrom-Json
-            try {
-                $Session.access_token = (New-PoshtifyAccesstoken -Client_ID $session.Client_id -Client_Secret $session.Client_Secret -refresh_token $session.refresh_token)
-            }
-            catch {
-                Write-Verbose $_.Exception | FL *
-                Throw "Cannot refresh token"
-            }
+            $Session.access_token = (New-PoshtifyAccesstoken -Client_ID $session.Client_id -Client_Secret $session.Client_Secret -refresh_token $session.refresh_token)
             $Splatting = @{
-                URI     = "https://api.spotify.com/v1/me/player/currently-playing"
+                URI     = "https://api.spotify.com/v1/me/playlists"
                 Method  = "Get"
                 Headers = @{
                     Authorization = "$($Session.token_type) $($Session.access_token)"; "contenttype" = "application/json"
@@ -44,23 +38,32 @@ Function Get-CurrentlyPlaying {
     PROCESS {
         $output = @()
         try {
-            $track = Invoke-RestMethod @Splatting
+            $list = Invoke-RestMethod @Splatting
         }
         Catch {
             Write-Verbose $_.Exception | FL *
             Throw "Cannot connect to API hit -verbose"
         }
-        if ($null -ne $track) {
-            $output = [PSCustomObject]@{
-                Name       = $track.item.name
-                Artist     = $track.item.artists.Name -join " "
-                Duration   = '{0:mm}:{0:ss}' -f [timespan]::FromMilliseconds($track.item.duration_ms)
-                Popularity = $track.item.popularity
-                Album      = $track.item.album.name
-                AlbumType  = $track.item.album.album_type
+        if ($list.items.Count -gt 1) {
+            for ($i = 0; $i -lt $list.items.Count; $i++) {
+                $output += [PSCustomObject]@{
+                    Name = [string]$list.items.name[$i]
+                    Owner = [string]$list.items.owner.display_name[$i]
+                    Totaltracks = [string]$list.items.tracks.total[$i]
+                    Public = [string]$list.items.public[$i]
+                    ID = [string]$list.items.id[$i]
+                }
+            }
+        }
+        else{
+            $output += [PsCustomObject]@{
+                Name = $list.items.name
+                Owner = $list.items.owner.display_name
+                Totaltracks = $list.items.tracks.total
+                Public = $list.items.public
+                ID = $list.items.id
             }
         }
         return $output
     }
 }
-

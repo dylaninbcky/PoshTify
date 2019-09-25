@@ -31,10 +31,15 @@ Function Connect-PoshTify {
                     Write-Output 'Global variable created, check by running $global:Accesscode'
                 }
                 else {
-                    $token | Add-Member -NotePropertyName 'Client_ID' -NotePropertyValue $ClientID
-                    $token | Add-Member -NotePropertyName 'Client_Secret' -NotePropertyValue $ClientSecret
-                    ConvertTo-Json -InputObject $token | Out-File "$outputpath\session.json"
-                    Write-Output 'JSON created!'
+                    if ($JSON) {
+                        $token | Add-Member -NotePropertyName 'Client_ID' -NotePropertyValue $ClientID
+                        $token | Add-Member -NotePropertyName 'Client_Secret' -NotePropertyValue $ClientSecret
+                        ConvertTo-Json -InputObject $token | Out-File "$outputpath\session.json"
+                        Write-Output 'JSON created!'
+                    }
+                    else {
+                        Write-Error 'JSON File path not supplied! exiting'
+                    }
                 }
             
             }
